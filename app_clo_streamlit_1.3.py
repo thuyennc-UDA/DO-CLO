@@ -564,7 +564,6 @@ if "OPENAI_API_KEY" not in st.secrets:
 else:
     # ✅ Thêm project_id nếu bạn dùng sk-proj
     client = OpenAI(
-        api_key=st.secrets["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"],
         project="proj_f6F2glDxZcPLGeYVM4OXn1G0"  # 👉 thay bằng ID project của bạn
     )
 # Khởi tạo client GPT
@@ -782,6 +781,7 @@ if st.button("📤 Tạo báo cáo CLO (Word)", key="btn_export_word"):
     st.success("✅ Báo cáo Word đã được tạo thành công!")
 
     
+
 
 
 
