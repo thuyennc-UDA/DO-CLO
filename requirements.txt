@@ -8,6 +8,8 @@ yagmail
 scipy
 matplotlib
 xlsxwriter
+openai
+
 
 
 
