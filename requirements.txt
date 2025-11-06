@@ -6,5 +6,7 @@ openpyxl
 python-docx
 yagmail
 scipy
+matplotlib
+
 
 
