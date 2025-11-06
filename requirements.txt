@@ -7,6 +7,7 @@ python-docx
 yagmail
 scipy
 matplotlib
+xlsxwriter
 
 
 
