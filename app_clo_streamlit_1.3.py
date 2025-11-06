@@ -556,7 +556,8 @@ except Exception as e:
 
 from openai import OpenAI
 import streamlit as st
-
+# Khởi tạo client
+client = OpenAI(api_key="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")
 # Kiểm tra key trong Streamlit Secrets
 if "OPENAI_API_KEY" not in st.secrets:
     st.error("❌ Không tìm thấy OPENAI_API_KEY trong Streamlit Secrets! Hãy vào Settings → Secrets để thêm.")
@@ -781,6 +782,7 @@ if st.button("📤 Tạo báo cáo CLO (Word)", key="btn_export_word"):
     st.success("✅ Báo cáo Word đã được tạo thành công!")
 
     
+
 
 
 
