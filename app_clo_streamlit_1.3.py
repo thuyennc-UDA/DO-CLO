@@ -6,8 +6,14 @@ from io import BytesIO
 from scipy import stats
 import matplotlib.pyplot as plt
 from datetime import datetime
+from openai import OpenAI
+
+# Khởi tạo client
+client = OpenAI(api_key="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")
+
 
 st.set_page_config(page_title="App đo lường CLO", layout="wide")
+
 
 st.title("📘 Ứng dụng đo lường Chuẩn đầu ra học phần (CLO)")
 st.write("Tải lên file điểm (CSV/Excel). File có thể là điểm từng câu hỏi (mỗi cột Q1,Q2...) hoặc điểm tổng và cột phân bố câu hỏi.")
@@ -552,6 +558,64 @@ except Exception as e:
     st.error(f"⚠️ Lỗi khi tạo biểu đồ A–F: {e}")
 
 
+# ------------------ PHÂN TÍCH GPT TỰ ĐỘNG ------------------
+if st.button("🤖 GPT tạo nhận xét & đề xuất", key="btn_gpt"):
+    try:
+        with st.spinner("GPT đang phân tích dữ liệu..."):
+            # 🧠 Tạo prompt yêu cầu GPT phân tích kết quả CĐR
+            prompt = f"""
+            Bạn là chuyên gia đánh giá học phần theo Chuẩn đầu ra (CĐR).
+
+            Học phần: {selected_hocphan}
+
+            === BẢNG TỔNG HỢP THỐNG KÊ CĐR ===
+            {df_thongke.head(10).to_string(index=False)}
+
+            === BẢNG PHÂN LOẠI KẾT QUẢ SINH VIÊN THEO MỨC ĐỘ ĐẠT ===
+            {df_phanloai.head(10).to_string(index=False)}
+
+            Vui lòng:
+            1️⃣ Viết phần **NHẬN XÉT TỔNG QUAN** (điểm mạnh, hạn chế, mức độ đạt các CĐR, so sánh giữa các mức độ đạt được).
+            2️⃣ Viết phần **ĐỀ XUẤT CẢI TIẾN** (các hành động hoặc giải pháp cụ thể giúp nâng cao tỉ lệ đạt CĐR).
+
+            Yêu cầu:
+            - Viết ngắn gọn, mạch lạc, dễ hiểu.
+            - Dựa sát theo dữ liệu thực tế trong bảng trên.
+            """
+
+            # ⚙️ Gọi GPT và lấy kết quả
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",  # hoặc "gpt-4o" nếu bạn dùng bản đầy đủ
+                    messages=[
+                        {"role": "system", "content": "Bạn là chuyên gia phân tích dữ liệu học tập."},
+                        {"role": "user", "content": prompt}
+                    ]
+                )
+            # ✅ Lấy nội dung trả về
+                gpt_text = response.choices[0].message.content
+
+                # Lưu vào session_state để xuất ra Word sau này
+                st.session_state.nhanxet = gpt_text.split("2️⃣")[0].replace("1️⃣", "").strip() if "2️⃣" in gpt_text else gpt_text
+                st.session_state.dexuat = gpt_text.split("2️⃣")[-1].strip() if "2️⃣" in gpt_text else ""
+                st.session_state.gpt_done = True
+
+                st.success("✅ GPT đã phân tích xong!")
+                st.write("### 🧩 Nhận xét:")
+                st.write(st.session_state.nhanxet)
+                st.write("### 🚀 Phần nhận xét này do AI thực hiện, chỉ mang tính tham khảo, nên cân nhắc khi sử dụng")
+                st.write(st.session_state.dexuat)
+
+            except Exception as e:
+                st.error(f"⚠️ Lỗi khi gọi GPT: {e}")
+        st.success("✅ GPT đã tạo nhận xét & đề xuất thành công!")
+    
+
+
+    except Exception as e:
+        st.error(f"⚠️ Lỗi khi gọi GPT: {e}")
+
+
 # ===================== 📄 XUẤT BÁO CÁO CLO (WORD) =====================
 from docx import Document
 from docx.shared import Inches, Pt
@@ -567,15 +631,19 @@ if "nhanxet" not in st.session_state:
     st.session_state.nhanxet = ""
 if "dexuat" not in st.session_state:
     st.session_state.dexuat = ""
+if "gpt_done" not in st.session_state:
+    st.session_state.gpt_done = False    
 
-st.session_state.nhanxet = st.text_area("✍️ Nhập nhận xét tổng quan:", value=st.session_state.nhanxet, key="nhanxet_text")
-st.session_state.dexuat = st.text_area("💡 Nhập đề xuất cải tiến:", value=st.session_state.dexuat, key="dexuat_text")
+st.session_state.nhanxet = st.text_area("✍️ Nhập nhận xét tổng quan:", value=st.session_state.nhanxet, height=150)
+st.session_state.dexuat = st.text_area("💡 Nhập đề xuất cải tiến:", value=st.session_state.dexuat, height=150)
 
 # --- Nút tạo báo cáo ---
 if st.button("📤 Tạo báo cáo CLO (Word)", key="btn_export_word"):
     try:
-        st.info("🧾 Đang tạo báo cáo... Vui lòng chờ trong giây lát.")
+        st.info("🧾 Đã có báo cáo cho bạn, bấm nút để tải về máy.")
         doc = Document()
+        # ✅ Khai báo sẵn để tránh lỗi
+        output_path = f"Bao_cao_CLO_{selected_hocphan}.docx"
 
         # Cài đặt style font
         style = doc.styles['Normal']
@@ -676,28 +744,30 @@ if st.button("📤 Tạo báo cáo CLO (Word)", key="btn_export_word"):
             doc.add_paragraph("⚠️ Không thể chèn biểu đồ A–F.")
 
         # ==================== PHẦN IV ====================
-        doc.add_heading("PHẦN IV. NHẬN XÉT – ĐỀ XUẤT", level=1)
-        nhanxet = st.session_state.nhanxet
-        dexuat = st.session_state.dexuat
-
-        doc.add_paragraph(f"1️⃣ Nhận xét: {nhanxet}")
-        doc.add_paragraph(f"2️⃣ Đề xuất: {dexuat}")
-
-        # ==================== LƯU & TẢI ====================
-        output_path = f"Bao_cao_CLO_{selected_hocphan}.docx"
-        doc.save(output_path)
+        doc.add_heading("PHẦN IV. NHẬN XÉT – ĐỀ XUẤT AI", level=1)
+        doc.add_paragraph(f"1️⃣ Nhận xét: {st.session_state.nhanxet}")
+        doc.add_paragraph(f"2️⃣ Đề xuất: {st.session_state.dexuat}")
 
         with open(output_path, "rb") as f:
-            st.download_button(
-                label="📥 Tải xuống báo cáo Word (A4)",
-                data=f,
-                file_name=output_path,
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            )
+            file_bytes = f.read()   # Đọc dữ liệu ra bộ nhớ
 
-        st.success("✅ Báo cáo Word đã được tạo thành công!")
+        st.download_button(
+            label="📥 Tải xuống báo cáo Word (A4)",
+            data=file_bytes,  # ✅ Dùng bytes, không dùng f nữa
+            file_name=output_path,
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+)
 
     except Exception as e:
         st.error(f"⚠️ Lỗi khi tạo báo cáo: {e}")
+        
+        # ==================== LƯU & TẢI ====================
+    output_path = f"Bao_cao_CLO_{selected_hocphan}.docx"
+    doc.save(output_path)
+
+        
+    st.success("✅ Báo cáo Word đã được tạo thành công!")
+
+    
 
 
