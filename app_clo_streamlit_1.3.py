@@ -564,9 +564,9 @@ from openai import OpenAI
 # OPENAI_API_KEY = "sk-xxxxxx"
 
 try:
-    api_key = st.secrets["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"]
+    api_key = st.secrets["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"]
 except Exception:
-    st.error("⚠️ Không tìm thấy OPENAI_API_KEY trong Streamlit Secrets! Hãy vào Settings → Secrets để thêm.")
+    st.error("⚠️ Không tìm thấy OPENAI_API_KEY trong Streamlit Secrets! Hãy vào Settings → Secrets để thêm ở đâu đây?????????????.")
     st.stop()
 
 # Khởi tạo client GPT
@@ -784,5 +784,6 @@ if st.button("📤 Tạo báo cáo CLO (Word)", key="btn_export_word"):
     st.success("✅ Báo cáo Word đã được tạo thành công!")
 
     
+
 
 
