@@ -9,8 +9,7 @@ from datetime import datetime
 from openai import OpenAI
 
 # Khởi tạo client
-client = OpenAI(api_key="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")
-
+client = OpenAI(api_key=st.secrets["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"])
 
 st.set_page_config(page_title="App đo lường CLO", layout="wide")
 
