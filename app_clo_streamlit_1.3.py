@@ -554,21 +554,18 @@ try:
 except Exception as e:
     st.error(f"⚠️ Lỗi khi tạo biểu đồ A–F: {e}")
 
-import streamlit as st
 from openai import OpenAI
+import streamlit as st
 
-# ===========================
-# 🔐 KHỞI TẠO OPENAI CLIENT
-# ===========================
-# Lưu ý: bạn cần đặt API key trong "Secrets" của Streamlit Cloud như sau:
-# OPENAI_API_KEY = "sk-xxxxxx"
-
-try:
-    api_key = st.secrets["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"]
-except Exception:
-    st.error("⚠️ Không tìm thấy OPENAI_API_KEY trong Streamlit Secrets! Hãy vào Settings → Secrets để thêm ở đâu đây?????????????.")
-    st.stop()
-
+# Kiểm tra key trong Streamlit Secrets
+if "OPENAI_API_KEY" not in st.secrets:
+    st.error("❌ Không tìm thấy OPENAI_API_KEY trong Streamlit Secrets! Hãy vào Settings → Secrets để thêm.")
+else:
+    # ✅ Thêm project_id nếu bạn dùng sk-proj
+    client = OpenAI(
+        api_key=st.secrets["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"],
+        project="proj_f6F2glDxZcPLGeYVM4OXn1G0"  # 👉 thay bằng ID project của bạn
+    )
 # Khởi tạo client GPT
 client = OpenAI(api_key=api_key)
 
@@ -784,6 +781,7 @@ if st.button("📤 Tạo báo cáo CLO (Word)", key="btn_export_word"):
     st.success("✅ Báo cáo Word đã được tạo thành công!")
 
     
+
 
 
 
