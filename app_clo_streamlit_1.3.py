@@ -566,9 +566,6 @@ else:
     client = OpenAI(
         project="proj_f6F2glDxZcPLGeYVM4OXn1G0"  # 👉 thay bằng ID project của bạn
     )
-# Khởi tạo client GPT
-client = OpenAI(api_key=api_key)
-
 
 # ------------------ PHÂN TÍCH GPT TỰ ĐỘNG ------------------
 if st.button("🤖 GPT tạo nhận xét & đề xuất", key="btn_gpt"):
@@ -781,6 +778,7 @@ if st.button("📤 Tạo báo cáo CLO (Word)", key="btn_export_word"):
     st.success("✅ Báo cáo Word đã được tạo thành công!")
 
     
+
 
 
 
