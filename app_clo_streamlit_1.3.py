@@ -8,8 +8,6 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from openai import OpenAI
 
-# Khởi tạo client
-client = OpenAI(api_key=st.secrets["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"])
 
 st.set_page_config(page_title="App đo lường CLO", layout="wide")
 
@@ -555,6 +553,24 @@ try:
 
 except Exception as e:
     st.error(f"⚠️ Lỗi khi tạo biểu đồ A–F: {e}")
+
+import streamlit as st
+from openai import OpenAI
+
+# ===========================
+# 🔐 KHỞI TẠO OPENAI CLIENT
+# ===========================
+# Lưu ý: bạn cần đặt API key trong "Secrets" của Streamlit Cloud như sau:
+# OPENAI_API_KEY = "sk-xxxxxx"
+
+try:
+    api_key = st.secrets["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"]
+except Exception:
+    st.error("⚠️ Không tìm thấy OPENAI_API_KEY trong Streamlit Secrets! Hãy vào Settings → Secrets để thêm.")
+    st.stop()
+
+# Khởi tạo client GPT
+client = OpenAI(api_key=api_key)
 
 
 # ------------------ PHÂN TÍCH GPT TỰ ĐỘNG ------------------
